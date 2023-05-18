@@ -1,4 +1,4 @@
-package oswnd
+package os_window
 
 Child_Status :: enum {
     None,

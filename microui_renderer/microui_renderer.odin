@@ -86,7 +86,7 @@ setup_gl_state :: proc() {
     gl.Enable(gl.TEXTURE_2D)
 }
 
-renderer_make :: proc() -> ^Microui_Renderer {
+create :: proc() -> ^Microui_Renderer {
     renderer := new(Microui_Renderer)
 
     gl.GenVertexArrays(1, &renderer.vao)
@@ -104,7 +104,7 @@ renderer_make :: proc() -> ^Microui_Renderer {
     return renderer
 }
 
-renderer_destroy :: proc(renderer: ^Microui_Renderer) {
+destroy :: proc(renderer: ^Microui_Renderer) {
     gl.DeleteVertexArrays(1, &renderer.vao)
     gl.DeleteBuffers(1, &renderer.vbo)
     gl.DeleteBuffers(1, &renderer.ebo)
@@ -239,10 +239,17 @@ set_clip_rect :: proc(renderer: ^Microui_Renderer, rect: mu.Rect) {
     gl.Scissor(rect.x, i32(renderer.height) - (rect.y + rect.h), rect.w, rect.h)
 }
 
-clear :: proc(renderer: ^Microui_Renderer, color: mu.Color) {
-    flush(renderer)
-    gl.ClearColor(f32(color.r) / 255.0, f32(color.g) / 255.0, f32(color.b) / 255.0, f32(color.a) / 255.0)
-    gl.Clear(gl.COLOR_BUFFER_BIT)
+process_microui_commands :: proc(renderer: ^Microui_Renderer, ctx: ^mu.Context) {
+    command_backing: ^mu.Command
+	for variant in mu.next_command_iterator(ctx, &command_backing) {
+        switch cmd in variant {
+        case ^mu.Command_Text: draw_text(renderer, cmd.str, cmd.pos, cmd.color)
+        case ^mu.Command_Rect: draw_rect(renderer, cmd.rect, cmd.color)
+        case ^mu.Command_Icon: draw_icon(renderer, int(cmd.id), cmd.rect, cmd.color)
+        case ^mu.Command_Clip: set_clip_rect(renderer, cmd.rect)
+        case ^mu.Command_Jump: {}
+        }
+    }
 }
 
 VERTEX_SOURCE :: `#version 330 core

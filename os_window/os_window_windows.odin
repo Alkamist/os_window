@@ -1,4 +1,4 @@
-package oswnd
+package os_window
 
 import "core:time"
 import "core:fmt"
@@ -31,6 +31,7 @@ window_count := 0
 window_class_name := win32.utf8_to_utf16("Odin_Os_Window")
 
 Window :: struct {
+    user_ptr: rawptr,
     on_close: proc(window: ^Window),
     on_move: proc(window: ^Window, x, y: int),
     on_resize: proc(window: ^Window, width, height: int),
@@ -553,8 +554,6 @@ _init_opengl_context :: proc(window: ^Window) {
     }
 
     win32.wglMakeCurrent(window._hdc, window._hglrc)
-    // gl.load_up_to(GL_MAJOR_VERSION, GL_MINOR_VERSION, _gl_set_proc_address)
-
     win32.ReleaseDC(window._hwnd, window._hdc)
 }
 
